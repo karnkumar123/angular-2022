@@ -1,0 +1,12 @@
+<div class="row">
+    <div class="col-sm-10">
+        <div style="border: 2px solid black">
+            <p>{{server.name}}  
+                <span 
+                    [ngStyle]="{color: server.type==='server'?'red':'blue'}">
+                    {{server.content}}
+                </span>
+            </p>
+        </div>
+    </div>
+</div>

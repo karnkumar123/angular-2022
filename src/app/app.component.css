@@ -1,0 +1,17 @@
+.flex-container{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+app-active-user{
+    flex-basis: 30%;
+}
+
+app-inactive-user{
+    flex-basis: 30%;
+}
+
+.hit{
+    flex-basis: 30%;
+}

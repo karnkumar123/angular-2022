@@ -1,0 +1,18 @@
+
+
+<div class="row">
+    <div class="col-sm-4">
+        <ul>
+            <li *ngFor="let server of servers">
+                <a 
+                    [routerLink]="['/servers',server.id]"
+                    [queryParams]="{allowEdit: server.id===3? '1': '0'}">
+                    <strong>{{server.name}}</strong>
+                </a> 
+            </li>
+        </ul>
+    </div>
+    <div class="col-sm-8">
+        <router-outlet></router-outlet>
+    </div>
+</div>

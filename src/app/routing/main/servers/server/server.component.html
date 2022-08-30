@@ -1,0 +1,17 @@
+
+<div class="row">
+    <div class="col-sm-4">
+        <p>Server Name: <strong>{{server.name}}</strong></p>
+        <p>Server Status: <strong>{{server.status}}</strong></p>
+        <div *ngIf="allowEdit">
+            <button 
+                class="btn btn-primary"
+                (click)="onEditServer(server)">
+                Edit
+            </button>
+        </div>
+        <div *ngIf="!allowEdit">
+            <h4>Yupps ! You are not allowed to edit !!</h4>
+        </div>
+    </div>
+</div>

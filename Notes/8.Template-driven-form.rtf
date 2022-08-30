@@ -1,0 +1,271 @@
+1> Angular offers two approaches in handling the form
+    -> Template driven (angular infers the form object from the DOM)
+    -> Reactive driven (Form is created programatically and synchronized with the DOM)
+
+2> How to configure tdf ?
+    -> import FormsModule in respective module.ts file (generally app.module.ts)
+        imports: [
+            CommonModule,
+            BrowserModule,
+            FormsModule   // important
+        ],
+
+    -> we have to give name attribute to each input controls which we want to register
+       for tdf like below
+        <input type="text" name="username" id="username" class="form-control">
+    
+    -> add ngModel directive to each input controls which we want to register for tdf
+        <input type="text" name="username" id="username" class="form-control" ngModel>
+
+    -> take reference(template reference) of form
+       <form (ngSubmit)="onSignUpFormSubmit(signUpForm)" #signUpForm="ngForm">
+
+       and take this form Object in ts file
+
+        onSignUpFormSubmit(f: NgForm){  // this form is of NgForm type
+            console.log('submit->', f)
+        }
+
+3> Study and explore consoled form f in the console and see each and every properties.
+   Some of the important properties are: -
+   Dirty (true) -> form value has been changed
+   touched (true)-> form controls has been clicked or touched
+   controls
+   value 
+   valid
+   errors
+   pristine
+   status
+   valueChanges
+   statusChanges
+   and so on
+
+4> Accessing the form using @ViewChild()
+    There is no need of sending the template reference in a function arguments
+    <form (ngSubmit)="onSignUpFormSubmit()" #signUpForm="ngForm">
+
+    In ts file
+    @ViewChild('signUpForm') signUpForm: NgForm; // signUpForm in '' should match with template literal name
+
+    onSignUpFormSubmit(){
+        console.log('submit->', this.signUpForm)
+    } 
+
+5> We add all the validators in the template(html) only in the template driven form.
+   we can add required to all input controls like below
+
+   <input type="text" name="email" id="email" class="form-control" required ngModel email>
+
+   required -> is html specific validator which angular takes benefit of
+   email -> built-in validator of angular same as type="email" in html
+   ngModel -> we know it is angular directive by which angular tracks the input controls
+
+6> Some important class angular apply on input controls by itself
+    ng-untouched -> if didn't touch the input field
+    ng-pristine -> if didn't change the value
+    ng-invalid -> if the control is invalid based on whatever the validator we apply on
+    ng-touched -> if we touched the input field
+    ng-dirty -> if we change the value
+    ng-valid -> if the controls is valid
+
+7> We have the properties as control level as well as form level.
+   I mean to say , we have form.valid as well as form.conrtrol.email.valid properties available
+   and so on.
+
+8> Build-in validator - https://angular.io/api/forms/Validators
+
+9> We might also want to enable HTML5 validation (by default, Angular disables it).
+   We can do so by adding the ngNativeValidate to a control in your template.
+
+10> Using the form state
+     <input 
+        type="submit" 
+        name="submitBtn" 
+        id="submit" 
+        class="btn btn-primary btn-block" 
+        value="Submit"
+        [disabled]="!signUpForm.valid">  // important , button is disabled if form is not valid
+
+11> As we know, angular add automaticall add some css class to input controls based 
+    on its validity like ng-touched, ng-invaid, ng-dirty and so on
+
+12> So add this one in .css class
+    input.ng-invalid.ng-touched{  // if touched and not valid
+        border: 1px solid red;
+    }
+
+13> We can write short error message below input like below
+
+    <input 
+        type="text" 
+        name="email" 
+        id="email" 
+        class="form-control"
+        required ngModel email>
+        <small 
+            class="help-block"
+            *ngIf="signUpForm?.form?.controls['email']?.invalid 
+            && signUpForm?.form?.controls['email'].touched">
+            <strong>
+                <em>Please enter valid email</em>
+            </strong>
+        </small> 
+
+14> We can default value also to input controls
+     <select class="form-control" id="secQuestion" name="secQuestion" [ngModel]="defaultSecretQuestion">
+        <option value="teacher">Your first teacher?</option>
+        <option value="school">Your first school?</option>
+        <option value="pet">Your first pet?</option>
+        <option value="friend">Your first friend?</option>
+    </select>
+
+    In ts file
+    defaultSecretQuestion = 'friend';
+
+    or we also we can give
+    [ngModel]="'pet'"
+
+15> ngModel with two-way binding
+     <textarea 
+        name="secretAnswers" 
+        rows="2"
+        class="form-control"
+        [(ngModel)]="answers">
+    </textarea>
+    <p>Your reply: {{answers}}</p> 
+
+    In ts file
+    answers = '';
+
+16> Grouping form controls
+    We can group controls so that it becomes a nested object.
+    We can wrap all those grouping contols in a div and provide a ngModelGroup directive.
+
+    We should give a ngModelGroup a name so that newly nested object gets its name.
+    Newly created object name is address because (ngModelGroup="address").
+    we can also take reference of that using #address="ngModelGroup" so that  we can use it 
+    like below
+
+     <strong *ngIf="address.touched && address.invalid">Please enter valid address</strong>
+
+    Example:-
+    <div class="form-group" ngModelGroup="address" class="address" #address="ngModelGroup">
+                        <label for="Address">Address</label>
+                        <input 
+                            type="text"
+                            name="district" 
+                            placeholder="enter district name"
+                            class="form-control"
+                            required
+                            ngModel>
+
+                        <input 
+                            type="text"
+                            name="city" 
+                            placeholder="enter city name"
+                            class="form-control"
+                            required
+                            ngModel>
+                        <small>
+                            <em>
+                                <strong *ngIf="address.touched && address.invalid">Please enter valid address</strong>
+                            </em>
+                        </small>
+                    </div>
+
+
+17> How to use radio buttons
+      <label for="gender" style="margin-right: 10px">Select Gender</label>
+      <div class="radio" *ngFor="let gender of genders">
+        <label>
+            <input 
+            type="radio" 
+            name="gender" 
+            [value]="gender"
+            [ngModel]="'female'">
+            {{gender}}
+        </label>
+    </div>
+
+18> How to fill the form programatically ?
+    -> We have two methods setValue and patchValue.
+    -> setValue needs each and every controls to be set
+    -> patchValue can set form partially.
+    -> In html file
+         <button type="button" (click)="suggestUser()">Suggest User</button>
+         <button type="button" (click)="defaultAddress()">Set default Address</button>
+
+        In ts file
+
+         suggestUser(){
+                this.signUpForm.setValue({
+                    username: 'Admin',
+                    email: 'admin@gmail.com',
+                    gender: 'female',
+                    secQuestion: this.defaultSecretQuestion,
+                    secretAnswers: '',
+                    address: {
+                        district: 'North Delhi',
+                        city: 'New Delhi',
+                        state: 'UT',
+                        pincode: 110011
+                    }
+                })
+        }
+
+        defaultAddress(){
+            this.signUpForm.form.patchValue({
+                    address: {
+                        district: 'Bangalore',
+                        city: 'Bangalore',
+                        state: 'KR',
+                        pincode: 721657
+                    }
+                })
+        }
+
+
+19> Extract the form data
+    In ts file
+    onSignUpFormSubmit(){
+            this.isSubmitted = true;
+            this.userObject = {
+                'email': this.signUpForm.value.email,
+                'gender': this.signUpForm.value.gender,
+                'secQuestion': this.signUpForm.value.secQuestion,
+                'secretAnswers': this.signUpForm.value.secretAnswers,
+                'username': this.signUpForm.value.username,
+                'pincode': this.signUpForm.value.address.pincode
+            }
+    }
+
+    In html file
+
+     <div class="row" *ngIf="isSubmitted">
+            <div class="col-sm-4">
+                <h3>Your Data</h3>
+                <pre>
+                   Email: {{userObject['email']}}
+                   Gender: {{userObject['gender']}}
+                   SecQuestion: {{userObject['secQuestion']}},
+                   SecretAnswers: {{userObject['secretAnswers']}},
+                   Username: {{userObject['username']}},
+                   Pincode: {{userObject['pincode']}}
+                </pre>
+            </div>
+    </div>
+
+20> Reset the form
+
+        onSignUpFormSubmit(){
+        this.isSubmitted = true;
+        this.userObject = {
+            'email': this.signUpForm.value.email,
+            'gender': this.signUpForm.value.gender,
+            'secQuestion': this.signUpForm.value.secQuestion,
+            'secretAnswers': this.signUpForm.value.secretAnswers,
+            'username': this.signUpForm.value.username,
+            'pincode': this.signUpForm.value.address.pincode
+            }
+        this.signUpForm.reset();  // important
+  }

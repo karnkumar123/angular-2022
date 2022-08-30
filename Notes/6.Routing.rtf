@@ -1,0 +1,585 @@
+1> We use routing for moving one pages into pages.
+2> we configure routing in app.module or any module.ts file.
+3> We can create any routing.module.ts file dedicated for routing.It depends on us.
+4> In app.module.ts file
+
+    import { RouterModule, Routes } from '@angular/router';
+    const appRoutes: Routes = [
+        {path: '', redirectTo: 'home', pathMatch: 'full'},
+        {path: 'home', component: HomeComponent},   // no need to give / like path: '/home'
+        {path: 'users', component: UsersComponent},
+        {path: 'servers', component: ServersComponent}
+    ]
+
+    imports: [
+        CommonModule,
+        BrowserModule,
+        RouterModule.forRoot(appRoutes)  // this is important
+    ]
+    In html file, we use <router-outlet></router-outlet> directive to load the components
+    dynamically.
+
+    <a href="#">Home</a>
+    <a href="#">Servers</a>
+    <a href="#">Users</a>
+
+     <div class="col-sm-12">
+            <router-outlet></router-outlet>
+    </div>
+
+    when we enter url localhost:4200/users  -> loads users component at router-outer place
+
+5> Navigating with router links
+    We could do this also
+    <a href="/users">Users</a>
+    when we click on the above anchor , we load localhost:4200/users page, but it reloads the whole
+    app, it means we lost the app state on reloading. So we have a better way in angular to load 
+    the different pages using some directive.It loads faster without loading the app.
+
+    <a routerLink="/servers">Servers</a>  // routerLink directive we will use
+
+    We can also use this directive as a property binding
+    <a [routerLink]="/servers">Servers</a> 
+    It means servers should be class member of its .ts file, if not we can wrap in string like below
+    <a [routerLink]="'/servers'">Servers</a> 
+
+    we can use as an array like below 
+    <a [routerLink]="['/servers', 'something']">Servers</a>  // localhost:4200/servers/something
+    We will learn later about this array way . 
+
+6> Understanding navigation path
+    -> <a routerLink="/servers">Servers</a> 
+    (absolute path means domain/servers i.e localhost:4200/servers)
+
+    -> <a routerLink="servers">Servers</a>  
+    (relative path means it just appends whatever in the url. Suppose we have localhost:4200/users in the url)
+    And we click on the above anchor it will load localhost:4200/users/servers .It throws error we dont have
+    configurated in appRoutes. Generally it is used in nested routes.
+    <a routerLink="./servers">Servers</a>  same as <a [routerLink]="servers">Servers</a> (relative path)
+       
+    -> <a routerLink="../servers">Servers</a> (Go one level up and append this routes i.e, servers)
+    -> <a routerLink="../../servers">Servers</a> (Go two level up and append this routes i.e servers)
+
+7> Styling active router links
+    Suppose we add one class in css class
+    .activeRoute{
+        color: burlywood;
+        background-color: aqua;
+        font-weight: bold;
+        font-style: italic;
+        font-size: large;
+        padding: 10px;
+    }
+    <a routerLink="/servers" routerLinkActive="activeRoute">Servers</a>
+    routerLinkActive adds that class when it is active.
+
+    Suppose we have some class name defined in ts class
+    mainClass: string = 'myClass';
+    <a routerLink="/servers" [routerLinkActive]="mainClass">Servers</a>
+
+    See later [routerLinkActiveOptions]="{exact:true}"
+
+    <a 
+        routerLink="/"ß
+        routerLinkActive="activeRoute"
+        [routerLinkActiveOptions]="{exact: true}">
+        Default Path(Home)
+    </a>
+
+    Here routes '/' is present in every routes thats why it active in every
+    routes. That why we added one more directive
+    [routerLinkActiveOptions]="{exact: true}">
+
+8> Navigating programatically
+    In html file
+    <button (click)="onLoadServers()">Load Servers</button>
+
+    In ts file
+    constructor(private _router: Router) { }
+    onLoadServers(){
+        this._router.navigate(['/servers'])  // absolute path i.e, localhost:4200/servers
+    }
+
+9> Relative path in navigating programatically
+    Suppose we are on users route and want to move on servers route
+
+    this._router.navigate(['/servers']) // absolute path localhost:4200/servers
+
+    If we use relative path
+    this._router.navigate(['servers'])
+    unlike routerLink directive, navigate method doesn't know on which path we are currently on.
+    So we use relativeTo in navigate mathod
+
+    this._router.navigate(['servers'], {relativeTo: this._activatedRoute})
+    the default relative is path is domain i,e localhost:4200 thats why even below code works well
+    this._router.navigate(['servers']) // it loads localhost:4200/servers not localhost:4200/users/servers (if we are on users path)
+
+    ActivatedRoute take referene of the current activated route
+    constructor(private _router: Router,private _activatedRoute: ActivatedRoute) { }
+
+    import
+
+    import { ActivatedRoute, Router } from '@angular/router';
+
+    this._router.navigate(['servers'], {relativeTo: this._activatedRoute}) // localhost:4200/uesrs/servers
+
+
+
+10> Passing parameters in routes
+
+    const appRoutes: Routes = [
+        {path: 'users', component: UsersComponent},
+        {path: 'users/:id', component: UserComponent} // passing dynamic value to UserComponent i.e localhost:4200/users/1
+    ]
+
+11> Fetching Route paramaters
+    {path: 'users/:id/:name', component: UserComponent},
+
+    In UserComponent
+     user: {name: string, id: number};
+     constructor(private _activatedRoute: ActivatedRoute) { }
+
+     ngOnInit(): void {
+        this.user = {
+            id: this._activatedRoute.snapshot.params['id'],
+            name: this._activatedRoute.snapshot.params['name']
+        }
+    }
+
+    In html
+    <p>User with name is <strong>{{user.name | uppercase}}</strong></p>
+    <p>User with id is <strong>{{user.id}}</strong></p>
+
+12> Fetching route parameters reactively
+    -> If we are on different component and want to load user component with some route params then we add below
+       code in ngOnInit, because it executes while creating the component
+
+       ngOnInit(): void {
+            this.user = {
+                id: this._activatedRoute.snapshot.params['id'],
+                name: this._activatedRoute.snapshot.params['name']
+            }
+        }
+
+        But suppose if we want to load the same component with new route params then it will not update.
+        Because angular will not recreated the same component. So ngOnInit will also not executes and hence 
+        new route params will not reflected.
+        For this purpose we will use route observables.
+
+        In UserComponent html
+
+        <a [routerLink]="['/users',10, 'Anna']">Load Anna (id=10)</a>
+
+        In ts file of UserComponent
+        ngOnInit(): void {
+            this.user = {
+                id: this._activatedRoute.snapshot.params['id'],
+                name: this._activatedRoute.snapshot.params['name']
+            }
+
+            this._activatedRoute.params.subscribe((params: Params) => {  // observables used when we load within the component
+                this.user.id = params['id'];
+                this.user.name = params['name'];
+            })
+        }
+
+13> The observables provided by angular by itself will be cleaned or unsubscribe automatically. But if we create any
+    Observables then we should unsubscribe it in the ngDestroy hook otherwise it  will be in memory unnecessarily.
+
+    export class UserComponent implements OnInit , OnDestroy{
+        user: {name: string, id: number};
+        paramsSubscription: Subscription;  // important
+        constructor(private _activatedRoute: ActivatedRoute) { }
+
+        ngOnDestroy(): void {  // important
+            this.paramsSubscription.unsubscribe();
+            console.log('The params subscription has been destoyed !!');
+            
+        }
+        ngOnInit(): void {
+            this.user = {
+                id: this._activatedRoute.snapshot.params['id'],
+                name: this._activatedRoute.snapshot.params['name']
+            }
+            this.paramsSubscription = this._activatedRoute.params.subscribe((params: Params) => { // important
+                this.user.id = params['id'];
+                this.user.name = params['name'];
+            })
+        }
+    }
+
+*******************************************************************************************************
+
+14> Passing query paramaters
+    -> passing through routerLink directive
+        <li *ngFor="let server of servers">
+            <a 
+                [routerLink]="['/servers',server.id,'edit']"
+                [queryParams]="{serverStatus: server.status, allowEdit:true}" 
+                fragment="loading">
+                <strong>{{server.name}}</strong>
+            </a> 
+            <button class="btn btn-danger" (click)="editServer(server)">Edit</button>
+        </li>
+
+        Its creates a url 
+        // localhost:4200/servers/1/edit?serverStatus=Online&allowEdit=true#loading
+
+    -> Passing programatically
+
+    <button class="btn btn-danger" (click)="editServer(server)">Edit</button>
+
+    editServer(server: {name: string, id: number, status: 'Online' | 'Offline'}){
+        this._router.navigate(['/servers', server.id, 'edit'], 
+                            {
+                            queryParams: {serverStatus: server.status, allowEdit: true}, 
+                            fragment: 'loading'
+                            }
+                        )
+   }
+
+15> Fetching Query params and fragments
+    We are loading Edit Server component
+    {path: 'servers/:id/edit', component: EditServerComponent},
+    so we will retrive query params and fragment as well route params in edit server component 
+
+    constructor(private _activatedRoute: ActivatedRoute) { }
+    ngOnInit(): void {
+        console.log(this._activatedRoute.snapshot.queryParams);
+        console.log(this._activatedRoute.snapshot.fragment);
+    }
+
+    The same issue if we load the edit server component from the same component only,so we can use subscription
+
+    ngOnInit(): void {
+        this._activatedRoute.queryParams.subscribe(data => console.log('Subscribe->', data));
+        this._activatedRoute.fragment.subscribe(data => console.log('Fragment->', data));
+    }
+    No need to destroy these subscription as angular will automatically destroy these as created by angular only.
+
+16> Setting of Child Routes
+
+    *.routing.module.ts
+
+    {path: 'users', component: UsersComponent, children: [
+        {path: ':id/:name', component: UserComponent},
+    ]}
+
+    Now we will create the router-outlet in the html of UsersComponent
+
+17> If we move from one route that has queryParams, to another route then query params will be deleted 
+    automatically
+    Suppose we are on this route 
+    http://localhost:4200/servers/3?allowEdit=1
+
+    when we move to route then ?allowEdit=1 will be moved
+    If we want to preserve it , we can add preserve like below
+
+    onEditServer(server: Server): void{
+    this._router.navigate(['edit'], 
+                          {
+                            relativeTo: this._activatedRoute, 
+                            queryParamsHandling: 'merge',  or preserve (current queryparam will not append)
+                            queryParams: {
+                              name: server.name,
+                              status: server.status
+                            }
+                          })
+  }
+
+
+18> Wildcard routes and redirect
+    -> if no routes matches , then we will use wildcard routes . It should be the last route in
+       configuration
+
+    -> if we dont want to load component on some url and redirect to another url. we can
+       do by redirect property
+
+       const appRoutes: Routes = [
+            {path: '', component: HomeComponent},
+            {path: 'home', component: HomeComponent},
+            {path: 'users', component: UsersComponent, children: [
+                {path: ':id/:name', component: UserComponent},
+            ]},
+            {path: 'servers', component: ServersComponent, children: [
+                {path: ':id', component: ServerComponent},
+                {path: ':id/edit', component: EditServerComponent},
+            ]},
+            {path: 'not-found', component: PageNotFoundComponent},  // important
+            {path: '**', redirectTo: 'not-found'}  // important
+        ]
+
+********************************************************************
+
+19> An introduction to guards
+    -> If we want to protect our route or want to execute some code before loading the route,
+       then we will use route guards.
+
+20>  canActivate route 
+    -> it is same as service which we use to protect the route and its all child route
+    -> create auth-guard.service.ts
+
+        import { Injectable } from "@angular/core";
+        import { ActivatedRouteSnapshot, CanActivate, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
+        import { Observable } from "rxjs";
+        import { AuthService } from "./auth-service";
+
+        @Injectable()
+        export class AuthGuard implements CanActivate{
+            constructor(private _authService: AuthService,private _router: Router){}
+            canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | Observable<boolean> | Promise<boolean> {
+                    console.log(route, state);
+                    let authAccess = this._authService.isAuthenticate();
+                    if(authAccess){
+                        return true;
+                    }else{
+                        return this._router.navigate(['/not-found']);
+                    }
+            }
+        }
+        create auth.service.ts
+        
+        export class AuthService{
+            isLogin: boolean = false;
+            login(): void{
+                this.isLogin = true;
+            }
+            logout(): void{
+                this.isLogin = false;
+            }
+
+            isAuthenticate(){
+                if(this.isLogin){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+        }
+
+        apply server route and all its child route
+        
+
+        {path: 'servers', component: ServersComponent, canActivate: [AuthGuard], children: [ // important
+            {path: ':id', component: ServerComponent},
+            {path: ':id/edit', component: EditServerComponent},
+        ]},
+
+        -> we can also work on asynchronous code
+
+        in auth-service.ts
+        isAuthenticate(): Promise<boolean>{
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    if(this.isLogin){
+                        resolve(true)
+                    }else{
+                        resolve(false);
+                    }
+                }, 2000)
+            })
+        }
+
+        in auth-guard.service.ts
+
+        canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | Observable<boolean> | Promise<boolean> {
+                console.log(route, state);
+                return this._authService.isAuthenticate().then((res: boolean) => {
+                    if(res){
+                        return true;
+                    }else{
+                        return this._router.navigate(['/not-found']);
+                    }
+                })
+        }
+
+
+21> canActivateChild
+    -> it acts on all child routes not on parent child
+    {path: 'servers', 
+      component: ServersComponent, 
+      //canActivate: [AuthGuard],   // commented for time being
+      canActivateChild: [AuthGuard], // important
+      children: [
+        {path: ':id', component: ServerComponent},
+        {path: ':id/edit', component: EditServerComponent},
+    ]},
+
+    in auth-guard.service.ts
+
+    import { Injectable } from "@angular/core";
+    import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, Router, RouterStateSnapshot, UrlTree } from "@angular/router";
+    import { Observable } from "rxjs";
+    import { AuthService } from "./auth-service";
+
+    @Injectable()
+    export class AuthGuard implements CanActivate, CanActivateChild{
+        constructor(private _authService: AuthService,private _router: Router){}
+    
+        canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | Observable<boolean> | Promise<boolean> {
+                console.log(route, state);
+                return this._authService.isAuthenticate().then((res: boolean) => {
+                    if(res){
+                        return true;
+                    }else{
+                        return this._router.navigate(['/not-found']);
+                    }
+                })
+        }
+
+        canActivateChild(childRoute: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean | Observable<boolean> | Promise<boolean> {
+            return this.canActivate(childRoute, state);
+        }
+    }
+
+22> canDeactivate
+    -> Whether we are allowed to leave route or not
+    -> in canDeactivate route, we need to access method of variable of components in services.
+    -> accessing service members from component is very stright forward. But accessing components member
+       from service is tough. Since route guards are also behave as services.
+    -> here we create one interface that will contain method signatures.This interface then implemented
+       in componets.
+        {path: ':id/edit', component: EditServerComponent, canDeactivate: [CanLeaveEditGuard]},
+
+    In Can-leave-edit-guard.service.ts
+
+    import { ActivatedRouteSnapshot, CanDeactivate, RouterStateSnapshot, UrlTree } from "@angular/router";
+    import { Observable } from "rxjs";
+
+    export interface CanDeactivateComponent{
+        canDeactivateEditComponents: () => Observable<boolean> | Promise<boolean> | boolean;
+    }
+
+    export class CanLeaveEditGuard implements CanDeactivate<CanDeactivateComponent>{
+        canDeactivate(
+            component: CanDeactivateComponent, 
+            currentRoute: ActivatedRouteSnapshot, 
+            currentState: RouterStateSnapshot, 
+            nextState?: RouterStateSnapshot): boolean | Observable<boolean> | Promise<boolean> {
+                return component.canDeactivateEditComponents();
+        }
+    }
+
+    In EditServerComponent
+
+    export class EditServerComponent implements OnInit, CanDeactivateComponent {....}
+
+    // implementing method
+    canDeactivateEditComponents(): Observable<boolean> | Promise<boolean> | boolean{
+    if(
+      (this.server.name !== this.servername || this.server.status !== this.serverstatus) && 
+      (this.changesSaved=== false)
+      ){
+      return confirm('Do you really want to move without saving ?');     
+    }else{
+      return true;
+    }
+  }
+
+
+23> Pass static data in route
+    {path: 'not-found', component: PageNotFoundComponent, data: {message: 'Page Not found static data'}},
+
+    In PageNotFoundcomponent html file
+    <h2>{{pageNotFoundMessage}}</h2>
+
+    In PageNotFoundComponent ts file
+
+    export class PageNotFoundComponent implements OnInit {
+    pageNotFoundMessage: string;
+    constructor(private _activatedRoute: ActivatedRoute) { }
+        ngOnInit(): void {
+            this.pageNotFoundMessage = this._activatedRoute.snapshot.data['message'];
+            this._activatedRoute.data.subscribe((data) => {
+            this.pageNotFoundMessage = data['message'];
+            })
+        }
+    }
+
+24> If we want to execute some code before loading of some routes, we will use resolver.It loads data first then
+    load the routes.
+    Alternatively we will load the route(component) first and in the ngOnit of component, we will load the data by
+    api call or any means.
+    But resolver is good alternative which loads component only after loading the data.
+    We have this method to return the server based on id
+
+    getOneServer(id: number): Server{
+        return this.servers.find(server => server.id === id);
+    }
+    Practicing on synchronous is not a harm but asynchronous code will be more fun and interesting to test
+    the resolver code.
+
+    changing this method to asynchronous
+
+    getOneServer(id: number): Promise<Server>{
+        return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(this.servers.find(server => server.id === id));
+        }, 2000)
+        })
+    }
+
+    What happens here , components loads first and data loads later.
+    In server component html
+    <p>Server Name: <strong>{{server.name}}</strong></p>
+    <p>Server Status: <strong>{{server.status}}</strong></p>
+
+    In server component ts
+    this._serverService.getOneServer(id).then((server: Server) => {
+        this.server = server;
+        console.log('server data loads->', new Date().toLocaleTimeString());
+    });
+    It will throw error because component and and views loads but didn't get the data.
+    What we can do, we can safe operator (?) in html and show some kind of loader of some kind.
+
+    <p>Server Name: <strong>{{server?.name}}</strong></p>
+    <p>Server Status: <strong>{{server?.status}}</strong></p>
+
+
+    Alternatively, we can use resolver, which resolves the data before loading the component.
+
+     {path: ':id', component: ServerComponent, resolve: {server: ServerResolver}},  // resolve accepts an object whose key name (here server) is very important
+
+
+
+    In server-resolver.service.ts file
+
+    import { Injectable } from "@angular/core";
+    import { ActivatedRouteSnapshot, Resolve, RouterStateSnapshot } from "@angular/router";
+    import { Observable } from "rxjs";
+
+    import { Server } from "../routing/main/servers/server.model";
+    import { ServersService } from "../routing/main/servers/servers.service";
+
+
+    @Injectable()
+    export class ServerResolver implements Resolve<Server>{
+        constructor(private _serverService: ServersService){}
+
+        resolve(route: ActivatedRouteSnapshot, 
+                state: RouterStateSnapshot): Server | Promise<Server> | Observable<Server> {
+                    let serverId = route.params['id'];
+                    return this._serverService.getOneServer(+serverId);
+        } 
+    }
+
+    in server.service.ts file
+
+     getOneServer(id: number): Promise<Server>{
+        return new Promise((resolve, reject) => {
+        setTimeout(() => {
+            resolve(this.servers.find(server => server.id === id));
+        }, 2000)
+        })
+    }
+
+    In server component.ts file
+
+     this._activatedRoute.data.subscribe((data: Data) => {
+      this.server = data['server'];   // this 'server' matches the resolver key defined in route configuration as below
+    })
+
+     {path: ':id', component: ServerComponent, resolve: {server: ServerResolver}},
+
+
+25> Location strategy, wee see later after deployment section

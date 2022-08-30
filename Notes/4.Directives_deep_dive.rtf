@@ -1,0 +1,236 @@
+1> Three types of directives
+    -> component directives
+    -> attribute directives (ngStyle, ngClass)
+    -> structural directive (ngFor, ngIf)
+
+2> We can't put two structural directive on the same element like below
+    <li *ngFor="let number of number" *ngIf="number % 2===0">
+    </li> // we can't do,, we will learn later how we can solve it.
+
+3> How to create custome directive and use it ?
+    In html file
+
+    In directive - basic-highlight.directive.ts file
+    import { Directive, ElementRef, OnInit } from "@angular/core";
+
+    @Directive({
+        selector: '[appBasicHighlight]'
+    })
+    export class BasicHighlight implements OnInit{
+        constructor(private _elRef: ElementRef){}
+        ngOnInit(): void {
+            this._elRef.nativeElement.style.backgroundColor = 'red';
+        }
+    }
+
+    Import in app.module.ts file
+
+4> We can also generate directive by cli
+    ng generate directive highlighter (ng g d highlighter)
+
+5> Its better to use renderer rather directly accessing the DOM elements
+   In html file
+   <p appBetterHighlight>I am better highlighter using renderer</p>
+
+   In better-highlight.directive.ts file
+
+   import { Directive, ElementRef, OnInit, Renderer2 } from '@angular/core';
+
+    @Directive({
+    selector: '[appBetterHighlight]'
+    })
+    export class BetterHighlightDirective implements OnInit{
+
+        constructor(
+            private _elRef: ElementRef, 
+            private _renderer: Renderer2
+            ) { }
+
+        ngOnInit(): void {
+            this._renderer.setStyle(this._elRef.nativeElement, 'background-color', 'yellow');
+        }
+    }
+
+6> HostListener
+    -> when we want to change style based on some event like hover or click or any event,
+       we will use HostListener.
+
+       import { Directive, ElementRef, HostListener, OnInit, Renderer2 } from '@angular/core';
+
+        @Directive({
+        selector: '[appBetterHighlight]'
+        })
+        export class BetterHighlightDirective implements OnInit{
+
+        constructor(
+            private _elRef: ElementRef, 
+            private _renderer: Renderer2
+            ) { }
+
+        ngOnInit(): void {
+            //this._renderer.setStyle(this._elRef.nativeElement, 'background-color', 'yellow');
+        }
+
+        @HostListener('mouseenter') mouseEnter(event: Event){
+            console.log('Event->', event);
+            this._renderer.setStyle(this._elRef.nativeElement, 'background-color', 'red');
+        }
+
+        @HostListener('mouseleave') mouseLeave(event: Event){
+            console.log('Event->', event);
+            this._renderer.setStyle(this._elRef.nativeElement, 'background-color', 'green');
+        }
+
+    }
+
+7> We can also use HostBinding in place of Renderer2 to style event though there is nothing wrong
+   in using Renderer2.
+
+   @HostBinding('style.backgroundColor') wallpapercolor: string = 'transparent';
+
+   here inside () of HostBinding, we give the properties of host element and its sub properties
+   like for img, we can use
+   @HostBinding('alt') altMsg: string = 'this is anchor tag';
+
+   Example:-
+   import { Directive, ElementRef, HostBinding, HostListener, OnInit, Renderer2 } from '@angular/core';
+
+    @Directive({
+    selector: '[appBetterHighlight]'
+    })
+    export class BetterHighlightDirective implements OnInit{
+
+        @HostBinding('style.backgroundColor') wallpapercolor: string = 'transparent';
+        constructor(
+            private _elRef: ElementRef, 
+            private _renderer: Renderer2
+            ) { }
+
+        ngOnInit(): void {
+            //this._renderer.setStyle(this._elRef.nativeElement, 'background-color', 'yellow');
+        }
+
+        @HostListener('mouseenter') mouseEnter(event: Event){
+            console.log('Event->', event);
+            //this._renderer.setStyle(this._elRef.nativeElement, 'background-color', 'red');
+            this.wallpapercolor = 'red';
+        }
+
+        @HostListener('mouseleave') mouseLeave(event: Event){
+            console.log('Event->', event);
+            //this._renderer.setStyle(this._elRef.nativeElement, 'background-color', 'green');
+            this.wallpapercolor = 'yellow';
+        }
+
+    }
+
+8> We can also pass data to directive through custom property binding;
+   <img [src]="https://anyImage">
+   How angular knows whether src is custom property or native property?
+   First angular checks whether we have custom property of that name or not then it
+   proceeds to check on native property and this happens very fast.
+
+   In html file
+   <p appBetterHighlight 
+        [defaultcolor]="'brown'" 
+        [highlightColor]="'purple'">
+        I am better highlighter using renderer
+    </p>
+
+    In directive class
+
+    import { Directive, ElementRef, HostBinding, HostListener, Input, OnInit, Renderer2 } from '@angular/core';
+
+    @Directive({
+    selector: '[appBetterHighlight]'
+    })
+    export class BetterHighlightDirective implements OnInit{
+        @Input() defaultcolor: string;
+        @Input() highlightColor: string;
+        @HostBinding('style.backgroundColor') wallpapercolor: string = 'transparent';
+        constructor() { }
+        ngOnInit(): void {
+            this.wallpapercolor = this.defaultcolor;
+        }
+        @HostListener('mouseenter') mouseEnter(event: Event){
+            this.wallpapercolor = this.highlightColor;
+        }
+        @HostListener('mouseleave') mouseLeave(event: Event){
+            this.wallpapercolor = this.defaultcolor;
+        }
+    }
+
+9> What happens behind the scene on structural directive ?
+    -> there is nothing like * syntax in angular then how angular uses it.
+    -> it changes the code using ng-template and attribute binding behind the scene.
+
+    <div *ngIf="isUserAuthenticated">
+        {{user.name}}
+    </div>
+
+    is same as below
+    <ng-template [ngIf]="isUserAuthenticated">
+        <div>
+            {{user.name}}
+        </div>
+    </ng-template>
+
+    using technic only, we can create our own structural directive
+
+10> Its better to write ngSwitch rather writing lot of ngIf.
+    In ts file
+    numbervalue: number = 40;
+
+    In html file
+    <div [ngSwitch]="numbervalue">
+        <h1 *ngSwitchCase="10">The value is 10</h1>
+        <h1 *ngSwitchCase="20">The value is 20</h1>
+        <h1 *ngSwitchCase="30">The value is 30</h1>
+        <h1 *ngSwitchDefault>The value is default</h1>
+    </div>
+
+11> We know how to create custom directive. But now we will know how we can create structural directive like ngFor, ngIf.
+    We know structural directive add or remove HTML element from the DOM. It alters the DOM.
+    So we need to know what template and where we have to place that structural directive.
+    Creating structural directive is very complex process.
+    We create one structural directive of opposite of ngIf.
+
+    In ts file
+        customStructuralDirectiveBoolean = false;
+
+    In html file
+    
+    <div *appNgIfKaUlta="customStructuralDirectiveBoolean">
+        <h1>Hello World!</h1>
+    </div>
+
+    Angular changes it under the hood
+
+        <ng-template [appNgIfKaUlta]="customStructuralDirectiveBoolean">
+            <h1>Hello World!</h1>
+        </ng-template>
+
+    In ng-if-ka-ulta.directive.ts file
+
+    import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+
+    @Directive({
+        selector: '[appNgIfKaUlta]'
+    })
+    export class NgIfKaUltaDirective {
+        @Input() set appNgIfKaUlta(condition: boolean){
+            if(!condition){
+            this._vcref.createEmbeddedView(this._tplRef);
+            }else{
+            this._vcref.clear();
+            }
+        }
+        constructor(private _tplRef: TemplateRef<any>, private _vcref: ViewContainerRef) { }
+    }
+
+            
+    -> we want to execute a method whenever any input value is changed so we use set accessor.
+    -> we take the ng-template ref through TemplateRef and the place where we want to show it renderer
+       as ViewContainerRef
+    -> if condition is according to us, we just embed the TemplateRef through createEmbeddedView method of ViewContainerRef.
+    

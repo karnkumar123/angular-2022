@@ -1,0 +1,19 @@
+<div>
+    <ul style="display: flex; width: 30vw; justify-content: space-between;background-color: cyan">
+        <li>
+            <a style="cursor: pointer;" routerLink="/home">Home</a>
+        </li>
+        <li>
+            <a style="cursor: pointer;" [routerLink]="['/user',1]">User1</a>
+        </li>
+        <li>
+            <a style="cursor: pointer;" [routerLink]="['/user',2]">User2</a>
+        </li>
+    </ul>
+</div>
+<hr>
+    <p *ngIf="activated"><Strong>Activated</Strong></p>
+<hr>
+<div>
+    <router-outlet></router-outlet>
+</div>

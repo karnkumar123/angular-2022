@@ -1,0 +1,187 @@
+<div class="signUpForm">
+    <div class="container-fluid">
+        <form (ngSubmit)="onSignUpFormSubmit()" #signUpForm="ngForm">
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="col-sm-6 col-lg-6 col-md-6 col-xl-6">
+                        <button 
+                            type="button"
+                            class="btn-block btn btn-primary"
+                            (click)="suggestUser()">Suggest User
+                        </button>
+                    </div>
+                    <div class="col-sm-6 col-lg-6 col-md-6 col-xl-6">
+                        <button 
+                            type="button"
+                            class="btn-block btn btn-primary"
+                            (click)="defaultAddress()">Set default Address
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="username" 
+                            class="form-control"
+                            required
+                            ngModel>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input 
+                            type="text" 
+                            name="email" 
+                            id="email" 
+                            class="form-control"
+                            required
+                            ngModel
+                            email>
+                        <small 
+                            class="help-block"
+                            *ngIf="signUpForm?.form?.controls['email']?.invalid 
+                                    && signUpForm?.form?.controls['email'].touched">
+                            <strong>
+                                <em>Please enter valid email</em>
+                            </strong>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <label for="gender" style="margin-right: 10px">Select Gender</label>
+                        <div class="radio" *ngFor="let gender of genders">
+                            <label>
+                                <input 
+                                    type="radio" 
+                                    name="gender" 
+                                    [value]="gender"
+                                    [ngModel]="'female'">
+                                    {{gender}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <label for="secQuestion">Secret Question</label>
+                        <select class="form-control" id="secQuestion" name="secQuestion" [ngModel]="defaultSecretQuestion">
+                                <option value="teacher">Your first teacher?</option>
+                                <option value="school">Your first school?</option>
+                                <option value="pet">Your first pet?</option>
+                                <option value="friend">Your first friend?</option>
+                        </select>
+                        <small 
+                            class="help-block"
+                            *ngIf="signUpForm?.form?.controls['secQuestion']?.invalid &&
+                                   signUpForm?.form?.controls['secQuestion']?.touched">
+                            <em>
+                                <strong>
+                                    Please select secret question !
+                                </strong>
+                            </em>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                       <textarea 
+                            name="secretAnswers" 
+                            rows="2"
+                            class="form-control"
+                            [(ngModel)]="answers">
+                        </textarea>
+                        <p>Your reply: {{answers}}</p> 
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group" ngModelGroup="address" class="address" #address="ngModelGroup">
+                        <label for="Address">Address</label>
+                        <input 
+                            type="text"
+                            name="district" 
+                            placeholder="enter district name"
+                            class="form-control"
+                            required
+                            ngModel>
+
+                        <input 
+                            type="text"
+                            name="city" 
+                            placeholder="enter city name"
+                            class="form-control"
+                            required
+                            ngModel>
+
+                        <input 
+                            type="text"
+                            name="state" 
+                            placeholder="enter state name"
+                            class="form-control"
+                            required
+                            ngModel>
+
+                        <input 
+                            type="text"
+                            name="pincode" 
+                            placeholder="enter pincode"
+                            class="form-control"
+                            required
+                            ngModel>
+
+                        <small>
+                            <em>
+                                <strong *ngIf="address.touched && address.invalid">Please enter valid address</strong>
+                            </em>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <input 
+                            type="submit" 
+                            name="submitBtn" 
+                            id="submit" 
+                            class="btn btn-primary btn-block" 
+                            value="Submit"
+                            [disabled]="!signUpForm.valid">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <hr>
+    <div class="container">
+        <div class="row" *ngIf="isSubmitted">
+            <div class="col-sm-4">
+                <h3>Your Data</h3>
+                <pre>
+                   Email: {{userObject['email']}}
+                   Gender: {{userObject['gender']}}
+                   SecQuestion: {{userObject['secQuestion']}},
+                   SecretAnswers: {{userObject['secretAnswers']}},
+                   Username: {{userObject['username']}},
+                   Pincode: {{userObject['pincode']}}
+                </pre>
+            </div>
+        </div>
+    </div>
+</div>

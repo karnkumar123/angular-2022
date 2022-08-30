@@ -1,0 +1,46 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-8">
+            <div class="col-sm-2">
+                <a 
+                    routerLink="/"
+                    routerLinkActive="activeRoute"
+                    [routerLinkActiveOptions]="{exact: true}">
+                    Default Path(Home)
+                </a>
+            </div>
+            <div class="col-sm-2">
+                <a 
+                    routerLink="/home"
+                    routerLinkActive="activeRoute">
+                    Home
+                </a>
+            </div>
+            <div class="col-sm-2">
+                <a 
+                    routerLink="/servers"
+                    routerLinkActive="activeRoute">
+                    Servers
+                </a>
+            </div>
+            <div class="col-sm-2">
+                <a 
+                    [routerLink]="'/users'"
+                    routerLinkActive="activeRoute">
+                    Users
+                </a>
+            </div>
+        </div>
+    </div> 
+    <hr>
+    <p [ngStyle]="styleObj"
+        style="background-color: blanchedalmond; padding: 20px 40px; text-align: center; font-size: large;">You are {{loginStatusMessage}}</p>
+    <div class="row" 
+        style="border: 2px solid black; width: 800px; height: 300px; padding: 10px; margin: auto;"
+        >
+        <div class="col-sm-12">
+            <router-outlet></router-outlet>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,38 @@
+<hr>
+<app-server></app-server>
+<app-server></app-server>
+
+<hr>
+
+<button class="btn btn-primary" (click)="onClickOfDisplayDetails()">Display Details</button>
+<span *ngIf="isShow">Secret Password=tuna</span>
+<div *ngFor="let time of timeStamp;let i = index">
+    <strong 
+        [ngStyle]="{backgroundColor: (i+1)>=5?'blue':''}"
+        [ngClass]="{whiteColor: (i+1) >= 5}">
+        {{time}}
+    </strong>
+</div>
+<hr>
+<button class="btn btn-success" (click)="updatePost()">Update Post List</button>
+<div>
+    <table>
+        <thead>
+            <tr>
+                <td>Id</td>
+                <td>Name</td>
+                <td>Email</td>
+                <td>Body</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let post of postsList; trackBy:trackById">
+                <td>{{post.id}}</td>
+                <td>{{post.name}}</td>
+                <td>{{post.email}}</td>
+                <td>{{post.body}}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+

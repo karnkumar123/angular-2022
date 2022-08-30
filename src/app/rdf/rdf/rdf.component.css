@@ -1,0 +1,20 @@
+.signUpForm{
+    margin: 10px 20px;
+}
+input.ng-invalid.ng-touched{
+    border: 4px solid red;
+}
+
+small{
+    color: rgba(140, 53, 53, 0.421);
+}
+.address{
+    border: 2px solid rgba(255, 0, 255, 0.5);
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 20px;
+}
+
+input.ng-pending{
+    border: 4px solid rgb(218, 218, 40)
+}

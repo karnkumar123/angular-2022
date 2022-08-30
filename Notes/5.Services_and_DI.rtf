@@ -1,0 +1,79 @@
+1> What is service ?
+    -> Service is a nothing but a simple ts class with some power which acts as central
+       repository and remove the code duplicacy.
+    -> used for inter-component communication
+
+2> E.g 
+   In service class
+    export class LoggerService{
+        logMsg(status: string){
+            console.log('The status is->',status);
+        }
+    }
+
+    In component
+    const logService = new LoggerService();
+    logService.logMsg('active');
+
+    Angular provied a better way to declare and use service as described below.
+
+3> Dependency Injection
+    -> We inject the Dependency in constructor of component that what Dependency components need
+       while creating its instance. We know Angular creates instance of component or services or etc.
+       Angular checks the constructor of Dependency and provides those Dependency while creating instance only.
+
+       In components
+
+       @Component({
+        .....
+        providers: [LoggerService]  // tells angular how to inject
+       })
+
+       constructor(private logService: LoggerService){} // tells angular what to inject
+
+4> Hierarchical Injection
+    -> Angular DI is a Hierarchical Injection.
+    -> If we give the providers in one component, then angular creates the instance for that componets and child 
+       of that component and child of that child and so one
+    -> It propogates from top to bottom but not vice versa.
+    -> Thats why we generally define service in the providers array in Appmodule so that all the components,
+       directive, pipe, services shared the same instance of that service.
+
+5> For injecting service in service , we have to declare service in app.module.ts file or other module as required.
+   otherwise we can't inject service in a service if we define providers in a @Component({}) decorator.
+
+6> We need @Injectable() metadata we inject a service into another service.
+   We add this metadata the place where we inject the service not the place which is being injected in service.
+
+   @NgModule({
+    .....
+    providers: [LoggerService, AccountService]
+   })
+
+   AccountService class
+
+   import {LoggerService} from '.../LoggerService';
+   @Injectable()
+   export class AccountService{
+        constructor(private _log: LoggerService){
+        }
+        addAccount(){
+            ...
+            this._log.logMsg(...);
+        }
+   }
+
+7> Generally, we get rid out of all those @Input() or @output communication if we use services.
+
+8> We can also do inter-component communication using service
+    service class
+    status = new EventEmitter<string>();
+
+    From one component
+    this.service.status.emit('success');
+
+    In another component
+    constructor(){ or ngOnit(){}
+        this.service.status.subscribe(data => console.log(data));
+    }
+    

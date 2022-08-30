@@ -1,0 +1,84 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-6">
+            <app-cockpit 
+                (servers)="onNewServers($event)">
+                <h3 #cockpitComponentHeader>This is cockpit component</h3>
+            </app-cockpit> <hr>
+        </div>
+        <div class="row">
+            <div class="col-sm-10">
+                <app-server-elements 
+                    *ngFor="let server of servers"
+                    [server] = "server">
+                </app-server-elements>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr>
+<p #heading>
+    I am paragraph
+</p>
+
+<hr>
+<app-game-control 
+    (emitNumber)="onGettingNumber($event)">
+</app-game-control>
+<hr>
+<div class="row">
+        <div class="col-sm-6">
+            <app-odd *ngFor="let num of oddNumbers" style="background-color: azure">
+                <strong>Odd Number &rarr;</strong>{{num}} <br>
+            </app-odd>
+        </div>
+        <div class="col-sm-6">
+            <app-even *ngFor="let num of evenNumbers" [evenNum]="num">
+            </app-even>
+        </div>
+</div> -->
+
+<!-- <p appBasicHighlight>I am basic highlighter</p>
+<p appBetterHighlight 
+    [defaultcolor]="'brown'" 
+    [highlightColor]="'purple'">
+    I am better highlighter using renderer
+</p>
+
+<img src="https://anyImage" appAnchorTag>
+
+<div *ngIf="isUserAuthenticated">
+    {{user.name}}
+</div>
+
+<ng-template [ngIf]="isUserAuthenticated">
+    <div>
+        {{user.name}}
+    </div>
+</ng-template>
+
+<hr>
+
+<div [ngSwitch]="numbervalue">
+    <h1 *ngSwitchCase="10">The value is 10</h1>
+    <h1 *ngSwitchCase="20">The value is 20</h1>
+    <h1 *ngSwitchCase="30">The value is 30</h1>
+    <h1 *ngSwitchDefault>The value is default</h1>
+</div>
+
+<hr>
+
+<div *appNgIfKaUlta="customStructuralDirectiveBoolean">
+    <h1>Hello World!</h1>
+</div> -->
+
+<!-- <div class="flex-container">
+    <app-active-user></app-active-user>
+    <div 
+        style="width: 30%; background-color: black; color: white; text-align: center; align-items: flex-start;">{{hitcount}}
+    </div>
+    <app-inactive-user></app-inactive-user>
+</div>
+
+<!-- <app-main></app-main> -->

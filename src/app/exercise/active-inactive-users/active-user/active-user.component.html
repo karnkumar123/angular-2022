@@ -1,0 +1,10 @@
+<div style="background-color: beige">
+    <div *ngFor="let usr of activeUsers; let i = index" style="border: 1px solid black">
+        <div style="display: flex; justify-content: space-around; align-items: center; ">
+            <div>{{usr}}</div>
+            <div>
+                <a href="#" (click)="makeInactive(i, usr)">Inactive</a>
+            </div>
+        </div>
+    </div>
+</div>

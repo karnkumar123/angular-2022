@@ -1,0 +1,268 @@
+1> Form is created programatically in .ts file and synchronized with the DOM.
+
+2> Setup for rdf
+    -> in respective *.module.ts file 
+
+    import { ReactiveFormsModule } from '@angular/forms';
+
+      imports: [
+        CommonModule,
+        BrowserModule,
+        ReactiveFormsModule
+    ],
+    ....
+
+    -> in components file. we will create one variable which will hold form.
+       This will be of type FormGroup
+
+       import { FormGroup } from '@angular/forms';
+
+       export class RdfComponent implements OnInit {
+            signupForm: FormGroup;
+            .........
+
+3> Creating a form
+    -> generally we create a form in a lifecycle hook which gets executed before the
+       rendering of the form, generally inside ngOnInit lifecycle hook.
+
+    -> 
+        ngOnInit(): void {
+            this.signupForm = new FormGroup({
+              'username': new FormControl(null),
+              'email': new FormControl(null),
+              'gender': new FormControl('male')
+            })
+        }
+        // syntax new FormControl('initail value', validators, asyncValidators), here initial value is null
+
+4> Sync with form html
+    -> add formGroup directive in form and use property binding 
+         <form [formGroup]="signupForm">
+         ....
+         In ts file
+         signupForm: FormGroup;
+
+    -> make input as form formcontrol using formControlName directive
+          <input 
+            type="text" 
+            name="username" 
+            id="username" 
+            class="form-control"
+            formControlName="username"  or [formControlName]="'username'"
+            > 
+
+5> Submitting the form
+    -> use ngSubmit directive as event binding on form
+         <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+
+    -> in ts file
+      onSubmit(){
+        console.log(this.signupForm);
+        console.log(this.signupForm.value);
+    }
+
+6> Adding validators
+    this.signupForm = new FormGroup({
+      'username': new FormControl(null, Validators.required), // one validators
+      'email': new FormControl(null, [Validators.required, Validators.email]), // more than one validators
+      'gender': new FormControl('male')
+    })
+     
+  
+7> Getting access to controls
+
+  -> 
+      <small class="help-block" 
+        *ngIf="!signupForm.controls['username'].valid && signupForm.controls['username'].touched">
+        <em>
+          <strong>Please enter valid username</strong>
+        </em>
+      </small>
+
+      or 
+      *ngIf="!signupForm.get('username').valid && signupForm.get('username').touched"
+
+      get method is used to get the controls or path(will see later) of controls.
+
+      <input type="submit" name="submitBtn" id="submit" value="Submit" [disabled]="!signupForm.valid">
+
+
+8> Grouping controls
+    -> it is very easy, lets we add an address field where we group city and pincode
+    -> ngOnInit(): void {
+      this.signupForm = new FormGroup({
+        'username': new FormControl(null, Validators.required),
+        'email': new FormControl(null, [Validators.required, Validators.email]),
+        'gender': new FormControl('male'),
+        'address': new FormGroup({  // important
+          'city': new FormControl(null, Validators.required),
+          'pincode': new FormControl(null, [Validators.required, Validators.maxLength(6)])
+        })
+      })
+    }
+
+    -> in html file, we wrap those grouping controls into one directive formGroupName
+       <div class="form-group" formGroupName="address">
+                        <label for="address" style="margin-right: 10px">Address</label>
+                        <input 
+                            type="text" 
+                            placeholder="enter city name" 
+                            name="city"
+                            id="city"
+                            class="form-control"
+                            formControlName="city"> <br>
+
+                        <input 
+                            type="text" 
+                            placeholder="enter pincode" 
+                            name="pincode"
+                            id="pincode"
+                            class="form-control"
+                            formControlName="pincode">
+
+                         <small class="help-block" 
+                        *ngIf="!signupForm.get('address.pincode').valid && signupForm.get('address.pincode').touched">
+                            <em>
+                                <strong>Please enter valid pincode</strong>
+                            </em>
+                        </small>
+        </div>
+
+      // important *ngIf="!signupForm.get('address.pincode').valid
+
+
+
+9> FormArray
+   In ts file
+    ngOnInit(): void {
+    this.signupForm = new FormGroup({
+      'gender': new FormControl('male'),
+      'hobbies': new FormArray([])   // important
+    })
+  }
+
+   addHobby(){
+      let control = new FormControl(null, Validators.required);
+      (<FormArray>this.signupForm.get('hobbies')).push(control);
+   }
+
+   In html file
+
+   <div>Your hobbies</div>
+   <button class="btn btn-success" (click)="addHobby()" type="button">Add hobby</button>
+    <div class="form-group" formArrayName="hobbies">
+      <div *ngFor="let control of signupForm.get('hobbies')['controls']; let i = index">
+        <input type="text" class="form-control" [formControlName]="i">
+      </div>
+    </div>
+
+10> Custom validators
+    In ts file
+     NANames: [string, string] = ['admin', 'max'];
+     
+     this.signupForm = new FormGroup({
+      'username': new FormControl(null, [Validators.required, this.naAllowedNames.bind(this)]),
+      ....
+
+     naAllowedNames(control: FormControl): {[s: string]: boolean}{
+        if(this.NANames.indexOf(control.value) > -1){
+          return {
+            'na-allowed-names': true
+          }
+        }else{
+          return null;
+        }
+      }
+
+11> Using error codes
+   <div class="form-group">
+                        <label for="username">Username</label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="username" 
+                            class="form-control"
+                            formControlName="username">
+                        <span *ngIf="!signupForm.get('username').valid && signupForm.get('username').touched">
+                            <small *ngIf="signupForm.get('username').errors['required']" class="help-block">
+                                <em><strong>
+                                    This field is mandatory
+                                </strong></em>
+                            </small>
+                            <small *ngIf="signupForm.get('username').errors['na-allowed-names']" class="help-block">
+                                <em><strong>
+                                    Please enter valid username
+                                </strong></em>
+                            </small>
+                        </span>
+     </div>
+
+
+12> Custom async validators
+    -> If we apply validator which hits api or backend which takes some time, means it is asynchronous.
+    -> The third argument in new FormControl() is for async validator
+    -> in ts file
+      'email': new FormControl(null, [Validators.required, Validators.email], this.naEmail),
+
+      if more than one async validator, we will give an array like below
+      'email': new FormControl(null, [Validators.required, Validators.email], [this.naEmail, this.other]),
+
+      naEmail(control: FormControl): Promise<any> | Observable<any>{
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            if(control.value === 'admin@admin.com'){
+              resolve({
+                'not-allowed-email': true
+              })
+            }else{
+              resolve(null);
+            }
+          }, 2000)
+        })
+      }
+
+      In css class
+      input.ng-pending{   // the class will ng-pendig for 2secs so applying new border color
+          border: 4px solid rgb(218, 218, 40)
+      }
+
+
+13> Reacting to status or value changes
+    -> we have two method which returns observables valueChanges and statusChanges.
+    -> we apply these two on form or individual controls
+    -> On Form itself
+
+      this.signupForm.valueChanges.subscribe((value) => console.log('value->',value));
+      this.signupForm.statusChanges.subscribe((status) => console.log('status->', status));
+
+    -> On individual controls
+
+      this.signupForm.get('email').statusChanges.subscribe(status => console.log(status));
+      this.signupForm.get('email').valueChanges.subscribe(value => console.log(value));
+
+14> Set and patch value and reset
+    -> set method needs all controls to set
+      this.signupForm.setValue({
+        'username': 'karan',
+        'email': 'karn@gmail.com',
+        'gender': 'male',
+        'address': {
+          'city': 'Bangalore',
+          'pincode': '112233'
+        },
+        'hobbies': []
+      })
+
+    -> patch needs some or all controls
+
+       this.signupForm.patchValue({
+        'username': 'karan'
+      })
+
+    -> reset will reset the form regarding status, value, status and all
+       this.signupForm.reset();
+
+       if we want reset with keeping some value
+            this.signupForm.reset({
+              'gender': 'male'
+            });

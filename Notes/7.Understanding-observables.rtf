@@ -1,0 +1,169 @@
+1> Angular uses RxJS for some parts of its internal functioning. 
+   We do not need to know Reactive Programming or RxJS in order to build even the most complex applications 
+   with Angular. It can however make some types of applications easier to architect.
+
+2> What are streams?
+    -> Streams are a sequence of values over time, that’s it.
+    -> a number that goes up by 1 every second might have a stream that looks like [0,1,2,3,4]
+    -> Another stream might be a sequence of x and y positions of mouse click events, like [(12,34), (345,22), (1,993)]
+    -> The data returned from a real-time websockets connection.
+    -> The chat windows opened by this user in a browser.
+
+3> What Is Reactive Programming?
+    -> Reactive programming is the idea that you can create your entire program just by defining 
+       the different streams and the operations that are performed on those streams.
+       As a concept that is easy to write, but how can we actually train our mind to program reactively?
+
+    -> With reactive programming we stop thinking about variables, 
+       instead we think in terms of streams and how those streams are connected together.
+       Going back to our example, we convert the variables A, B and C into streams.
+       A is now not an individual value at one point in time, it’s a stream of values over time.
+       The function add we think of an operation we perform which connects the output of streams A and B 
+       to the input of stream C.
+       Now if we push some numbers onto stream A and B, the add operation is automatically called, 
+       calculating the sum of 4 and pushing it onto stream C.
+       If stream C was connected to another stream via another operation, 
+       that operation would then be called automatically as well.
+       An analogy which works for me is to think about reactive programming as plumbing. 
+       We decide which pipes we need in our application, we decide how those pipes are connected together 
+       and then we turn on the water and sit back.
+       With reactive programming we don’t call functions, we just define how our application 
+       is plumbed together and start pushing values onto streams and let the plumbing and operations 
+       handle the rest.
+       So if later on the value of B changes, we simply push the new value onto the stream B 
+       and then let the plumbing handle the rest.
+
+4> Observable:-
+   -> Various data sources like User input (events), Http requests
+   -> observer (handle data, handle error, handle completion)
+   -> create simple observable using interval operator
+
+   import { interval, Subscription } from 'rxjs';
+   export class HomeComponent implements OnInit, OnDestroy {
+      private firstSubscription: Subscription;
+      constructor() { }
+      ngOnInit(): void {
+         this.firstSubscription = interval(1000).subscribe((count: number) => {
+            console.log(count);
+         })
+      }
+      ngOnDestroy(): void {
+         this.firstSubscription.unsubscribe();
+      }
+   }
+
+5> creating our custom observables
+   import { Component, OnDestroy, OnInit } from '@angular/core';
+   import { Observable, Subscription } from 'rxjs';
+
+
+   @Component({
+   selector: 'app-home',
+   templateUrl: './home.component.html',
+   styleUrls: ['./home.component.css']
+   })
+   export class HomeComponent implements OnInit, OnDestroy {
+      count: number = 0;
+      mySubscription: Subscription;
+      myObservable = new Observable<any>((observer) => {
+         setInterval(()=> {
+            if(this.count === 3){
+            observer.complete();
+            }
+            if(this.count === 2){
+            observer.error(new Error('Count shouldnot be 4'));
+            }
+            observer.next(this.count);
+            this.count++;
+         }, 1000)
+      })
+      constructor() { }
+      ngOnDestroy(): void {
+            this.mySubscription.unsubscribe();
+      }
+
+      ngOnInit(): void {
+            this.mySubscription = this.myObservable.subscribe((data) => {
+            console.log(data);
+            }, (error: Error) => {
+            console.log(error);
+            }, () => {
+            console.log('completed');
+            })
+      }
+   }
+
+   After error, observer doesn't emit for complete stage.
+
+6> Operator
+   -> Operators are the magic features of rxjs library. If we want to transform subscription data, then we use
+      Operator.
+
+   -> Every observable has a pipe operator.
+
+   import { Component, OnDestroy, OnInit } from '@angular/core';
+   import { map, Observable, Subscription } from 'rxjs';
+
+   @Component({
+      selector: 'app-home',
+      templateUrl: './home.component.html',
+      styleUrls: ['./home.component.css']
+   })
+   export class HomeComponent implements OnInit, OnDestroy{
+      count = 0;
+      private subsciption: Subscription;
+      customObservable = new Observable<number>((observer) => {
+         setInterval(() => {
+            observer.next(this.count);
+            this.count++;
+         }, 500)
+      });
+      constructor() { }
+      ngOnInit(): void {
+         this.subsciption = this.customObservable.pipe(map((data: number) => {
+            return `Hello ${data}`;
+         })).subscribe((data: string) => {
+            console.log(data);
+         })
+      }
+
+      ngOnDestroy(): void {
+         this.subsciption.unsubscribe();
+      }
+   }
+
+7> we can also add more than one Operators
+   ngOnInit(): void {
+      this.subsciption = this.customObservable.pipe(filter((data: number) => {
+         return data > 0;
+      }),map((data: number) => {
+         return `Hello ${data}`;
+      })).subscribe((data: string) => {
+         console.log(data);
+      })
+  }
+
+8> Subject
+   -> Subject are the better to choice for cross-component communication than
+      even emitter. Its a rxjs feature.
+   -> We use subject extensively in angular app.
+   import { Subject } from "rxjs";
+   export class UserService{
+      isActivated = new Subject<boolean>();
+   }
+
+   onActivation(){
+    this._usrService.isActivated.next(true);
+  }
+
+  activated = false;
+  private subscription: Subscription;
+  constructor(private _usrService: UserService) { }
+  ngOnInit(): void {
+      this.subscription = this._usrService.isActivated.subscribe((value: boolean) => {
+        this.activated = value;
+      })
+  }
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }

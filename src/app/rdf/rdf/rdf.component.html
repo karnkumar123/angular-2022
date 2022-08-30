@@ -1,0 +1,136 @@
+<!-- <div class="signUpForm">
+    <div class="container-fluid">
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input 
+                            type="text" 
+                            name="username" 
+                            id="username" 
+                            class="form-control"
+                            formControlName="username">
+                        <span *ngIf="!signupForm.get('username').valid && signupForm.get('username').touched">
+                            <small *ngIf="signupForm.get('username').errors['required']" class="help-block">
+                                <em><strong>
+                                    This field is mandatory
+                                </strong></em>
+                            </small>
+                            <small *ngIf="signupForm.get('username').errors['na-allowed-names']" class="help-block">
+                                <em><strong>
+                                    Please enter valid username
+                                </strong></em>
+                            </small>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input 
+                            type="text" 
+                            name="email" 
+                            id="email" 
+                            class="form-control"
+                            formControlName="email">
+
+                         <small class="help-block" 
+                        *ngIf="!signupForm.get('email').valid && signupForm.get('email').touched">
+                            <em>
+                                <strong>Please enter valid email</strong>
+                            </em>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <label for="gender" style="margin-right: 10px">Select Gender</label>
+                        <div class="radio" *ngFor="let gender of genders">
+                            <label>
+                                <input 
+                                    type="radio" 
+                                    name="gender" 
+                                    [value]="gender"
+                                    formControlName="gender">
+                                    {{gender}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group" formGroupName="address">
+                        <label for="address" style="margin-right: 10px">Address</label>
+                        <input 
+                            type="text" 
+                            placeholder="enter city name" 
+                            name="city"
+                            id="city"
+                            class="form-control"
+                            formControlName="city"> <br>
+
+                        <input 
+                            type="text" 
+                            placeholder="enter pincode" 
+                            name="pincode"
+                            id="pincode"
+                            class="form-control"
+                            formControlName="pincode">
+
+                        <small class="help-block" 
+                        *ngIf="!signupForm.get('address.pincode').valid && signupForm.get('address.pincode').touched">
+                            <em>
+                                <strong>Please enter valid pincode</strong>
+                            </em>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                  <div>Your hobbies</div>
+                  <button class="btn btn-success" (click)="addHobby()" type="button">Add hobby</button>
+                  <div class="form-group" formArrayName="hobbies">
+                    <div *ngFor="let control of signupForm.get('hobbies')['controls']; let i = index">
+                        <input type="text" class="form-control" [formControlName]="i">
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4 col-lg-4 col-md-4 col-xl-4">
+                    <div class="form-group">
+                        <input 
+                            type="submit" 
+                            name="submitBtn" 
+                            id="submit" 
+                            class="btn btn-primary btn-block" 
+                            value="Submit"
+                            [disabled]="!signupForm.valid"
+                        >
+                        <input 
+                            type="button" 
+                            name="resetBtn" 
+                            id="reset" 
+                            class="btn btn-primary btn-block" 
+                            value="Reset"
+                            (click)="resetForm()"
+                        >
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <hr>
+</div> -->
+
+
+<hr>
+
+<app-rdf-assignment></app-rdf-assignment>

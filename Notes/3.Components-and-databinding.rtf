@@ -1,0 +1,163 @@
+1> We can send data from parent component to child component through custom property binding using
+   @Input() decorator.
+   E.g, In app.component.html
+   <app-server-elements 
+        *ngFor="let server of servers"
+        [server] = "server">
+    </app-server-elements>
+
+    Here server-elements is a child component of app component and we are sending data from 
+    app component to server-elements component.
+
+    In server-elements component:-
+    @Input() server: {name: string, content: string, type: string};  // @Input() decorator
+
+    We can also use alias
+     @Input('srvElement') server: {name: string, content: string, type: string};  
+     Then we have to make change
+    <app-server-elements 
+        *ngFor="let server of servers"
+        [srvElement] = "server">
+    </app-server-elements>
+
+2> We can send data from child component to parent component through custom event binding using
+   @Output() decorator.
+   E.g,
+   In child component i.e, cockpit component Here
+   In cockpit component
+   @Output() servers = new EventEmitter<{name: string, content: string, type: string}>(); // @Output() decorator
+
+   and we will pass data through this decorator only
+   onAddServer(){
+        this.servers.emit({name: this.serverName, content: this.serverContent, type: 'server'});
+   }
+   And Now in parent component i.e, app component Here
+   <app-cockpit 
+        (servers)="onNewServers($event)">
+    </app-cockpit>
+
+    That passing data will be assigning in @event special object and we can assign in any variable through 
+    any method in parent component, i.e, onNewServers Here
+
+     onNewServers(data: {name: string, content: string, type: string}){
+        this.servers.push(data);
+     }
+
+    we can also use alias here like @Input but not so necessary.
+
+3> Both Input() and @Output are came from @anglular/core package
+   import { Component, Input} from '@angular/core';
+   import { Component, Output} from '@angular/core';
+
+4> View Encapuslation-:
+
+
+5> Local references in template -:
+   We can give local references in template(html) for any HTML element i.e, input, p, h1, div etc. 
+   It holds the reference the reference(not value) of that HTML element.
+
+   <input type="text" id="serverName" class="form-control" #srvName>
+   <button type="button" (click)="onAddServer(srvName, srvContent)">Add Server</button>
+
+   In ts file
+
+   onAddServer(srvName: HTMLInputElement, srvContent: HTMLInputElement){
+        this.servers.emit({name: srvName.value, content: srvContent.value, type: 'server'});
+   }
+
+6> Getting access to the HTML template & DOM using @ViewChild() -:
+    We can also access HTML element using @ViewChild
+
+    <input type="text" id="serverContent" class="form-control" #srvContent>
+    In ts file
+    @ViewChild('srvContent') serverContent: ElementRef; // the string inside () should be the local reference in HTML
+     
+    onAddServer(srvName: HTMLInputElement){
+        let serverContent = this.serverContent.nativeElement.value;  // its a ElementRef
+        this.servers.emit({name: srvName.value, content: serverContent.value, type: 'server'});
+    }
+
+7> Projecting content into component with ng-content:-
+    As we know the content of component selector will be replaced at runtime.
+
+    <app-component>Loading..</app-component>
+    We never see Loading... in the browser because it will be replaced by the html of app-component at runtime.
+    But using ng-content  directive we can show this. See below example.
+
+    <app-cockpit (servers)="onNewServers($event)">
+                <h3>This is cockpit component</h3>
+    </app-cockpit>
+
+    Now in the HTML of cockpit component
+    <button type="button" click)="onAddBlueprintServer(srvName)">Add Blueprint Server</button>
+    <ng-content></ng-content>
+
+    The content "This is cockpit component" in h3 heading will come below button in browser.
+
+8> Lifecycle hooks -:
+   There are 8 Lifecycle hooks
+   constructor is called  before any of the hooks.
+
+   a> ngOnChanges - called after a bound Input (@Input value) property changes
+
+   b> ngOnInit - called once the component is initialized
+
+   c> ngDoCheck - called during every change detection run
+
+   d> ngAfterContentInit - called after content(ng-content) has been projected into view
+
+   e> ngAfterContentChecked - called every time the projected content has been ngAfterContentChecked
+
+   f> ngAfterViewInit - called after the components and its child views has been initialized
+
+   g> ngAfterViewChecked - called every time the view and child view has been checked
+
+   h> ngOnDestroy - called once the components has been destroyed
+
+9> ngOnChange() is the only hook which accepts a parameter
+
+   ngOnChanges(changes: SimpleChanges): void {
+    console.log(changes);
+  }
+
+  logged item is 
+  {server: SimpleChange}
+    server: SimpleChange
+    currentValue: {name: 'a', content: undefined, type: 'server'}
+    firstChange: true
+    previousValue: undefined
+
+10> Local template access in Lifecycle hook
+    we can only access once the view has been initialized.So we should access that inside ngAfterViewInit hook.
+
+    in HTML
+    <p #heading>
+        I am paragraph
+    </p>
+
+    in ts file
+     ngAfterViewInit(){
+        let para = this.header.nativeElement.textContent;
+        console.log(para);   // I am paragraph
+    }
+
+11> use of ContentChild()
+
+    In parent component
+         <app-cockpit 
+                (servers)="onNewServers($event)">
+                <h3 #cockpitComponentHeader>This is cockpit component</h3>  // taking reference
+         </app-cockpit> <hr>
+
+    In html of cockpit component
+    <ng-content></ng-content>  // h3 comes here
+
+    In ts file of cockpit component
+    @ContentChild('cockpitComponentHeader') header: ElementRef;
+    export class CockpitComponent implements OnInit, AfterContentInit{
+        ngAfterContentInit(): void {
+            let headerContent = this.header.nativeElement.textContent;
+            console.log('Header Content ->', headerContent);
+        }
+        ...
+    }

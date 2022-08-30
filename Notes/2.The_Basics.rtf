@@ -1,0 +1,174 @@
+1> How Angular app starts ?
+    -> index.html is the one file that is hoisted by the server (local or shared server).
+    -> Due to above line only, angular is SPA .
+    -> main.ts is the first file which is getting executed by angular. This configuration that main.ts should
+       be the first file to executed is present in angular.json file.
+    -> In main.ts file we are bootstraping the required module here AppModule
+       platformBrowserDynamic().bootstrapModule(AppModule)
+        .catch(err => console.error(err));
+    -> In app.module.ts file, we have bootstrap array in @NgModule decorator which tells
+       which components should be known to angular by the time it analyzes index.html file.
+       bootstrap: [AppComponent]
+    -> Now control goes to AppComponent file and see the selector
+       selector: 'app-root',
+       and matches this selector in the selector in index.html 
+       <app-root></app-root> and serve the html template of that selector's component.
+
+    -> at run time, angular replaces original <app-root> from index.html file.
+
+2> components are the building block of angular app. We can split up the big app in small chunks of its 
+   own template and business logic is called components.
+
+3> Angular uses modules to bundle. Angular is not gonna to scan each and every files rather it scan only
+   *.module.ts file to know what we components and services etc we are using in app.
+
+4> we can use angular-cli to create components - ng generate component servers (ng g c servers)
+
+5> In @Component({}), template or templateUrl is the mandatory field, we have to have it.
+
+6> we can use template in place of templateUrl in the component but it is not the recommended way.
+   When we have very small template, then we can use template like below.
+   @Component({
+        selector: 'app-servers',
+        template: `<app-server></app-server><app-server></app-server>`,
+        styleUrls: ['./servers.component.css']
+    })
+
+7> We can also use styles in place of styleUrls we have less style like below.
+   @Component({
+    selector: 'app-server',
+    templateUrl: './server.component.html',
+    styles: [`p{color: blue}`]
+    })
+
+    or
+
+    @Component({
+        selector: 'app-server',
+        templateUrl: './server.component.html',
+        styleUrls: ['./server.component.css']
+    })
+
+8> Rather using selector , we can also use class or attribute selector for component.
+ -> attribute selector
+    In child component, here server component
+        selector: '[app-server]',
+    In parent component template, here servers component
+        <div app-server></div>
+
+ -> class selector
+         selector: '.app-server',  // in server component - child component
+         <div class="app-server"></div>  // in servers component - parent component
+
+9> What is databinding?
+   i> Communication between HTML and ts.
+
+   ii> ts -> html 
+            - interpolation {{data}}
+            - property binding [property]="data"
+
+   iii> html -> ts
+               - event binding (event)="expression"
+
+   iV> twoway binding
+         - banana in a box [(ngModel)]="data"   // FormsModule is required for this
+
+10> String interpolation - {{}}
+    We can use any expression which is string or returns strings
+    In ts file
+      -> serverId: number = Math.ceil(10 * Math.random());
+   In html file
+      -> <h1>Server id is {{serverId}} is status is <strong>{{serverId>5?'Online':'Offline'}}</strong></h1>
+
+11> Property binding
+   In html file
+      <button [disabled]="!isAllowedAddServer" class="btn btn-primary">Add server</button>
+
+   In ts file
+      isAllowedAddServer: boolean = false;
+      constructor() { 
+            setTimeout(() => {
+               this.isAllowedAddServer = true;
+            }, 3000)
+      }
+
+12> Event Binding
+   In html
+      <button (click)="onServerCreation()">Add server</button>
+
+   In ts 
+      onServerCreation(): void{
+         this.serverCreationStatus = "Server is created."
+      }
+
+13> Passing data with event binding - $event
+    -> $event is the keyword we use to pass the input event details to ts file.
+    -> In html file
+         <input type="text" class="form-control" (input)="onEnterServerName($event)"> <br>
+   -> In  ts file
+         onEnterServerName(event: Event): void{
+            this.serverName = (event.target as HTMLInputElement).value
+         }
+
+14> Two way binding - use [(ngModel)] directive
+      -> FormsModule should be imported in the module to use this directive
+      -> <input type="text" class="form-control" [(ngModel)]="serverName">
+      -> this [(ngModel)] works with input html element.
+
+15> What are Directives?
+   -> Directives are the instructions to the DOM.
+   -> Components are also directives but the directives with template.
+   -> We have also directives without template. 
+
+16> *ngIf is strcutural directive. We add * for strcutural directive.
+    We use this directive for showing or hiding HTML elements from DOM.
+    <button *ngIf="username" >Reset</button>  // this button will come only if there is username
+    We know '' (empty string) behaves as a false in javascript.
+
+17> We can also use else with ngif condition.
+        <button *ngIf="username; else noBtn">Reset</button>
+        <ng-template #noBtn>
+            <p>Reset button will come here</p>
+        </ng-template>
+
+18> *ngFor directive
+   -> In ts file
+      usersList: {name: string, age: number}[] = [
+         {name: 'karan', age: 23},
+         {name: 'saurav', age: 13}
+      ]
+
+   -> In html file
+      <div *ngFor="let user of usersList">
+            Name is {{user.name}} and age is {{user.age}}
+      </div>
+
+19> ngStyle 
+     <h1 
+      [ngStyle]="{'background-color': getColor()}">
+      Server id is {{serverId}} is status is <strong>{{serverId>5?'Online':'Offline'}}</strong>
+   </h1> 
+   or We can also write
+   [ngStyle]="{backgroundColor: getColor()}"
+
+   In ts file
+   getColor(){
+        return this.serverStatus === 'online' ? 'green' : 'red';
+    }
+
+20> ngClass
+    <h1
+      [ngClass]="{online: serverStatus === 'online'}">
+      Server id is {{serverId}} is status is <strong>{{serverId>5?'Online':'Offline'}}</strong>
+   </h1>
+
+   In css file
+   .online{
+      color: white;
+   }
+
+21> Index of *ngFor
+         <div *ngFor="let user of usersList; let i = index">
+            {{i+1}}-Name is {{user.name}} and age is {{user.age}}
+         </div>
+
