@@ -1,0 +1,67 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-xs-6">
+            <div class="form-group">
+                <label for="selectFilter">Select Filter</label> &nbsp; &nbsp;
+                <label class="radio-inline">
+                    <input 
+                        type="radio" 
+                        name="statusRadio" 
+                        [value]="filterBy[0]" 
+                        (change)="onChangeFilter($event)"
+                        checked>By Status
+                </label>
+                <label class="radio-inline">
+                    <input 
+                        type="radio" 
+                        name="statusRadio" 
+                        [value]="filterBy[1]" 
+                        (change)="onChangeFilter($event)">By Name
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row" [ngStyle]="{display: isNameFilterVisible}">
+        <div class="col-xs-6">
+            <div class="form-group">
+                    <input 
+                        class="form-control"
+                        type="text" 
+                        placeholder="filter server by name"
+                        [(ngModel)]="filteredString">
+            </div>
+        </div>
+    </div>
+    <div class="row" [ngStyle]="{display:isStatusFilterVisible}">
+        <div class="col-xs-6">
+            <label class="radio-inline">
+                <input type="radio" name="statusRadio" value="offline" (change)="onChange($event)">Offline
+              </label>
+              <label class="radio-inline">
+                <input type="radio" name="statusRadio" value="online" (change)="onChange($event)">Online
+              </label>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-6">
+            <button 
+                class="btn btn-lg btn-warning"
+                (click)="onAddServer()">Add Server
+            </button> &nbsp; &nbsp; <h4>App Status {{appStatus | async}}</h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-6">
+            <h3>Server Details</h3>
+            <ul>
+                <li *ngFor="let server of serverList | filter: selectedFilter: selectedValue | sort: 'name' "
+                    [ngClass]="{online: server.status==='online', offline: server.status==='offline'}">
+                    {{server.name | uppercase | shorten:0:9}} | 
+                    {{server.status}} | 
+                    {{server.instance | reverse}} | 
+                    {{server.startDate | date: 'fullDate' | uppercase}}
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,202 @@
+1> We don't connect angualar directly with DB.
+   Because frontend code is highly insecure and anyone can inspect code and see DB credentials.
+
+2> Angular -> server -> DB
+
+3> Anatomy of a http request
+    -> http verb - get, put, patch, delete, post
+    -> url(api point) - /posts/1
+    -> headers(metadata) - optional - browsers and angular also add by default - {"Content-type": "application/json"}
+    -> Body - mainly use for put, patch or post request - {"title": "New title"}
+
+4> How to setup for using http
+    -> import in respective modules
+        import { HttpClientModule} from '@angular/common/http';
+
+        and inside NgModule
+        imports: [HttpClientModule],
+
+5> Making post request we need Body
+    onCreatePost(){
+        const body = {
+            id: this.postForm.value.id,
+            title: this.postForm.value.title,
+            content: this.postForm.value.content
+        }
+        this._httpClient.post('/api/posts', body).subscribe((responseData) => {
+            console.log(responseData);
+        })
+    }
+
+    HttpClient not only returns the data but also filter the data from whole response.
+    We have way to get whole response that we will learn later.
+
+6> Get request
+    getPosts(){
+        this._httpClient.get('/api/posts').subscribe((responseData: Post[]) => {
+             this.allPosts = responseData
+        });
+    }
+
+7> Alter responseData using rxjs operator
+    getPosts(){
+        this._httpClient.get('/api/posts')
+        .pipe(map((posts: Post[]) => {
+            let idArray = [];
+            posts.forEach((post: Post) => {
+                idArray.push(post.title);
+            })
+            return idArray;
+        }))
+        .subscribe((responseData: string[]) => {
+            console.log(responseData);
+        });
+    }
+
+8> Adding types in HttpClient verb
+     this._httpClient.post<Post>('/api/posts', body).subscribe((responseData: Post) => {
+       console.log(responseData);
+    })
+
+    this._httpClient.get<Post[]>('/api/posts').subscribe((responseData: Post[]) => {
+      this.allPosts = responseData
+    });
+
+    This is purely optional
+
+9> The recommended way to make any external api call from services only. we keep 
+   component for picking data and showing on the UI. we use services for heavy work.
+
+   In services.ts file
+   getPosts(): Observable<Post[]>{
+        return this._http.get<Post[]>('/api/posts');
+    }
+
+   In component.ts file
+   ngOnInit(): void {
+        this.getPosts();
+    }
+
+10> Delete request
+    -> delete post
+
+    deletePost(id: number){
+        this._httpClient.delete('/api/posts/'+id).subscribe((responseData: Post[]) => {
+             this.allPosts = responseData
+        });
+    }
+
+11> Recursiverly delete
+
+    In component file
+
+     onClearPosts(){
+        let response = {};
+        this.deletePostsIds.forEach(async (id) => {
+            response[id] = await this._postService.deletePosts(id)
+        })
+        console.log(response);
+    }
+
+    In service file
+     deletePosts(idToBeDeleted: number){
+        return this._http.delete('/api/posts/'+idToBeDeleted).toPromise();
+    }
+
+12> Handling error
+    -> The second paramter of subscribe is for error
+         getPosts(){
+            this.isFetching = true;
+            this._postService.getPosts()
+            .subscribe((responseData: Post[]) => {
+                this.isFetching = false;
+                this.allPosts = responseData;
+            }, (error) => {
+                this.error = error;
+            });
+        }
+    Newer version this way of writing subscribe
+
+     getPosts(){
+        this.isFetching = true;
+        this._postService.getPosts()
+        .subscribe({
+            next: (responseData: Post[]) => {
+                this.isFetching = false;
+                this.allPosts = responseData;
+            },
+            error: (error) => {
+                this.error = error;
+            }
+        })
+    }
+
+    -> Sometimes we dont subscribe in component rather we do in services the we can make use
+       of subject to get the error in component
+
+       In service file
+
+        errorSubject = new Subject<string>();
+
+        createPost(body){
+            this._http.post<Post>('/api/posts', body).subscribe({next: (responseDate) => {
+                console.log(responseDate);
+                this.getPosts();
+                }, error: (error) => {
+                this.errorSubject.next(error);
+            }})
+        }
+
+    In component file
+
+    ngOnInit(): void {
+        this._postService.errorSubject.subscribe((error) => {
+            this.error = error;
+        })
+    }
+
+    onCreatePost(){
+        const body = {
+            id: this.postForm.value.id,
+            title: this.postForm.value.title,
+            content: this.postForm.value.content
+        }
+        this._postService.createPost(body);
+    }
+
+    -> Using the catchError operator
+        we can also use
+        catchError, throwError rxjs operator for the same.
+
+         getPosts(){
+            this.isFetching = true;
+            this._postService.getPosts()
+            .pipe(catchError((errorResponse) => {
+                // we use here some generic operations
+                return throwError(errorResponse);
+            }))
+            .subscribe({
+            next: (responseData: Post[]) => {
+                this.isFetching = false;
+                this.allPosts = responseData;
+            }})
+
+    We use above design if we have to send some analytics to server or for any generic work.
+
+    We use below design for any specific work or show message on UI if error occurs.
+
+    getPosts(){
+        this.isFetching = true;
+        this._postService.getPosts()
+        .subscribe({
+        next: (responseData: Post[]) => {
+            this.isFetching = false;
+            this.allPosts = responseData;
+        },
+        error: (error) => {
+            this.error = error;
+        }})
+    } 
+
+
+        

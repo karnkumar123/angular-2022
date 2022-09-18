@@ -1,0 +1,59 @@
+<div class="container">
+    <form (ngSubmit)="onCreatePost()" #postForm="ngForm">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label for="title">Title</label>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="title" 
+                        name="title" 
+                        ngModel
+                        required
+                    >
+                </div>
+                <div class="form-group">
+                    <label for="content">Content</label>
+                    <textarea 
+                        name="content" 
+                        id="content" 
+                        rows="2" 
+                        class="form-control"
+                        ngModel
+                        required>
+                    </textarea>
+                </div>
+                <button 
+                    class="btn btn-primary" 
+                    type="submit"
+                    [disabled]="!postForm.valid">
+                    Send Post
+                </button>
+            </div>
+        </div>
+        <hr>
+        <div class="row" style="padding-left: 15px">
+            <button 
+                type="button" 
+                class="btn btn-primary"
+                (click)="getPosts()">
+                Fetch Posts
+            </button>  &nbsp; | &nbsp;
+            <button 
+                [disabled]="deletePostsIds.length<1"
+                type="button" 
+                class="btn btn-danger"
+                (click)="onClearPosts()">
+                Clear Post
+            </button>
+        </div>
+    </form>
+    <hr>
+    <app-posts-list 
+        [allPosts]="allPosts" 
+        [isFetching]="isFetching"
+        (idsForDeletePost)="collectIdsForDelete($event)"
+        [error]="error">
+    </app-posts-list>
+</div>

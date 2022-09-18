@@ -1,0 +1,114 @@
+1> Pipes are used to transform the output in the template. we dont change the actual data, 
+   we only transform while rendering the data on the screen.
+
+2> Some builtin pipes like uppercase, lowercase, titlecase, date, etc
+    <li *ngFor="let server of serverList"
+        [ngClass]="{online: server.status==='online', offline: server.status==='offline'}">
+        {{server.name | uppercase}} | 
+        {{server.status}} | 
+        {{server.startDate | date}}  // changes time to format -> Aug 12, 2019 -> MMM DD, YYYY
+    </li>
+
+3> Parameterized pipes
+    {{server.startDate | date: 'fullDate'}} // Tuesday, April 13, 1920
+
+    we can also chain Parameterized pipes
+    {{server.startDate | date: 'fullDate' | uppercase}} // TUESDAY, APRIL 13, 1920
+    order of chaining pipes is important
+
+4> where we can learn more pipes
+    https://angular.io/api?query=pipe
+
+5> Creating a custom pipe
+    import { Pipe, PipeTransform } from "@angular/core";
+    @Pipe({
+        name: 'shorten'
+    })
+    export class ShortenPipe implements PipeTransform{
+        transform(serverName: string) {
+            if(serverName.length > 10){
+                return serverName.slice(0,8)+'...';
+            }else{
+                return serverName
+            }
+        }
+    }
+
+    in html
+    {{server.name | uppercase | shorten}}
+
+6> Parameterized a custom pipe
+    import { Pipe, PipeTransform } from "@angular/core";
+
+    @Pipe({
+        name: 'shorten'
+    })
+    export class ShortenPipe implements PipeTransform{
+        transform(serverName: string, startIndex: number, endIndex: number) {
+            if(serverName.length > endIndex){
+                return serverName.slice(startIndex, endIndex)+'...';
+            }else{
+                return serverName
+            }
+        }
+    }
+
+    {{server.name | uppercase | shorten:0:4}}
+
+7> createing a filter pipe
+    -> filter.pipe.ts
+
+        export class FilterPipe implements PipeTransform{
+            transform(serverList: Server[], selectedfilter: string, selectedValue: string) {
+                let returnedData: Server[] = [];
+                if(selectedfilter === '' || selectedValue === ''){
+                    return serverList;
+                }
+                if(selectedfilter === 'by status'){
+                    returnedData = serverList.filter(server => server.status === selectedValue);
+                }else if(selectedfilter === 'by name'){
+                    returnedData = serverList.filter((eachServer) => {
+                        return eachServer.name.toUpperCase().indexOf(selectedValue.toUpperCase()) > -1;
+                    })
+                }
+                return returnedData;
+            }  
+        }
+
+8> Pipe are pure by default. It means
+     <li *ngFor="let server of serverList | filter: selectedFilter: selectedValue">
+
+     the filter executes whenever any input value changes like selectedFilter or selectedValue not the data serverList
+     on which pipe is applied.
+
+     But we can make pipe impure so that it executes whenever data changes, serverList here.
+
+     @Pipe({
+            'name': 'filter',
+            pure: false   // BY DEFAULT IT IS TRUE
+        })
+
+
+9> Async pipe
+    -> In html
+         <h4>App Status {{appStatus | async}}</h4>
+
+    -> In ts file
+         appStatus = new Promise((resolve, reject) => {
+            setTimeout(()=> {
+                resolve('stable')
+            }, 2000)
+        })
+
+10> Sort pipe
+    export class SortPipe implements PipeTransform{
+        transform(serverList: Server[], prop: string) {
+            return serverList.sort((a, b) => {
+                if(a[prop] > b[prop]){
+                    return 1
+                }else{
+                    return -1
+                }
+            })
+        }
+    } 
