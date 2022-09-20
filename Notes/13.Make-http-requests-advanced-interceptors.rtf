@@ -1,0 +1,110 @@
+1> Interceptors are not mandatory concept but very useful concept.
+   Suppose we want to add some header with every outgoing request.
+   We can direclty pass in every request like below
+
+   getPosts(): Observable<Post[]>{
+        return this._http.get<Post[]>('/api/posts/', {
+            headers: new HttpHeaders({
+                'custom-header': 'I am custom header',
+            }),
+            responseType: 'json'
+            });
+    }
+
+    or we can direclty create Interceptors which pass header for each and every outgoing request
+    automatically.
+
+2> Interceptors works in two scenarion
+    1> right before request goes out of the app
+    2> right before the reponses forward to the subscribe
+
+3> How to create Interceptors ?
+    -> create one file of your interest say auth-interceptors.service.ts
+    -> auth-interceptors.service.ts
+
+        import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from "@angular/common/http";
+        import { Observable } from "rxjs";
+
+        export class AuthInterceptorService implements HttpInterceptor{
+            intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+                console.log('req is on way')
+                return next.handle(req);
+            }
+        }
+
+    Now come to respective module file
+
+    import { HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
+    providers: [
+        PostService,
+        {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true}  // important
+    ]
+
+4> We can also modify req object inside intercept method in interceptors.
+   The req object is readonly property so we can't directly change it.
+   We will use clone method.
+
+    export class AuthInterceptorService implements HttpInterceptor{
+        intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+            const modifiedUrl = req.clone({headers: req.headers.append('Auth', 'XYzxse12We')});
+            return next.handle(modifiedUrl);
+        }
+    }
+
+5> Response Interceptors
+    -> Suppose we want to transform response of every request. Then we can definitely do
+    in every request method through rxjs pipe operator.But code become more cumbursome if we
+    write pipe in each and every method.
+
+    The other way is , we can write pipe in interceptors also to modified the reponses
+    right before it is subscribed.
+
+    export class AuthInterceptorService implements HttpInterceptor{
+        intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+            const modifiedUrl = req.clone({headers: req.headers.append('Auth', 'XYzxse12We')});
+                return next.handle(modifiedUrl).pipe(tap((event) => {
+                        console.log(event);
+                        if(event.type ===  HttpEventType.Response){
+                            console.log('Response arrived');
+                            console.log(event.body);
+                        }
+                }));
+        }
+    }
+
+6> Multiple interceptors
+    -> create one more interceptors
+    -> We can simply add more than one interceptors in respective module by adding one more object
+    -> 
+        providers: [
+            PostService,
+            {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true},
+            {provide: HTTP_INTERCEPTORS, useClass: LoginInterceptorService, multi: true}
+        ]
+
+    -> But here the main thing is order. Here Auth Interceptors will execute first then login interceptors.
+       The order totally depends on our usecase. Like here, we pass header key in auth interceptors,
+       and based on that auth key, we continue with the request in login interceptors.
+       So here order does matter.
+
+    -> Auth interceptors
+        export class AuthInterceptorService implements HttpInterceptor{
+            intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+                const modifiedUrl = req.clone({headers: req.headers.append('Auth', 'XYzxse12We')});
+                return next.handle(modifiedUrl);
+            }
+        }
+
+        Login interceptors
+
+        export class LoginInterceptorService implements HttpInterceptor{
+            intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+                console.log('Hello->',req.headers.get('auth'));
+                if(req.headers.get('auth') === 'XYzxse12W'){
+                    return next.handle(req);
+                }
+                return next.handle(null); 
+            }
+        }
+
+7> 

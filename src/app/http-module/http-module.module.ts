@@ -3,9 +3,11 @@ import { CommonModule } from '@angular/common';
 import { MainContainerComponent } from './main-container/main-container.component';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule} from '@angular/common/http';
+import { HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
 import { PostsListComponent } from './main-container/posts-list/posts-list.component';
-import { PostService } from './post.service';
+import { PostService } from './service/post.service';
+import { AuthInterceptorService } from './service/auth-interceptors.service';
+import { LoginInterceptorService } from './service/login-interceptors.service';
 
 
 @NgModule({
@@ -20,6 +22,10 @@ import { PostService } from './post.service';
     HttpClientModule
   ],
   bootstrap: [MainContainerComponent],
-  providers: [PostService]
+  providers: [
+    PostService,
+    {provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true},
+    {provide: HTTP_INTERCEPTORS, useClass: LoginInterceptorService, multi: true}
+  ]
 })
 export class HttpModuleModule { }

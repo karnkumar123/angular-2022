@@ -1,1 +1,111 @@
-1> 
+1> Setting headers
+    -> The last argument of any http method(get, post, put, delete etc) is header.
+    -> It is always an object
+    -> example
+
+        import { HttpClient, HttpHeaders } from '@angular/common/http';
+        getPosts(): Observable<Post[]>{
+            return this._http.get<Post[]>('/api/posts/', {
+                headers: new HttpHeaders({
+                    'custom-header': 'I am custom header'
+                })
+            });
+        }
+
+2> Addinng query params
+    -> We can add query params with the url also, but it makes url so clumsy and long.
+        let getUrl = "http://localhost:3000/api/posts?id=1&name=rohan";
+
+    -> but passing query params in http header config object is more convenientt way.
+
+        import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+        getPosts(): Observable<Post[]>{
+            return this._http.get<Post[]>('/api/posts/', {
+                headers: new HttpHeaders({
+                    'custom-header': 'I am custom header',
+                }),
+                params: new HttpParams().set('id', 1)  // important
+                });
+        }
+
+        url becomes = http://localhost:4200/api/posts/?id=1
+
+    -> we can pass more than one query params also by below ways
+
+         getPosts(): Observable<Post[]>{
+            let searchParams = new HttpParams();
+            searchParams = searchParams.append('id', 1);
+            searchParams = searchParams.append('name', 'mohan');
+            searchParams = searchParams.append('city', 'patna');
+
+            return this._http.get<Post[]>('/api/posts/', {
+                headers: new HttpHeaders({
+                    'custom-header': 'I am custom header',
+                }),
+                params: searchParams
+                });
+        }
+
+    url becomes = http://localhost:4200/api/posts/?id=1&name=mohan&city=patna
+
+3> Observing different types of responses
+    -> Sometimes we dont need the responseData only, we need whole http response.
+       We can acheive this be using last parameter of any http method that is actually a object
+       where we set http header earlier.
+
+    -> suppose in post request
+        createPost(body){
+            return this._http.post<Post>('/api/posts', body,
+            {
+                observe: 'response'  // default is body which returns HttpResponse.body
+            })
+        }
+
+        In component file
+        this._postService.createPost(body)
+            .subscribe({
+                next: (data) => {
+                    console.log(data.statusText);  // Created
+                    this.getPosts();
+                },error: (error) => {
+                    console.log(error);
+                }
+            })
+
+    -> The Angular Tap RxJs operator returns an observable that is identical to the source. 
+       It does not modify the stream in any way. Tap operator is useful for logging the value, 
+       debugging the stream for the correct values, or perform any other side effects.
+
+    -> When we make an api call then we will have many events like request sent, status received,
+       upload progress, download progress, response received etc. This things we can capture in events.
+
+    ->  HttpEventType is a enum imported from
+        import { HttpClient, HttpEventType, HttpHeaders, HttpParams } from '@angular/common/http';
+
+        createPost(body){
+            return this._http.post<Post>('/api/posts', body,{observe: 'events'})  // important
+                .pipe(tap((event) => {
+                if(event.type === HttpEventType.Sent){
+                    console.log('The request has been sent');
+                }else if(event.type === HttpEventType.ResponseHeader){
+                    console.log('The status code and headers were received');
+                }else if(event.type === HttpEventType.Response){
+                    console.log('The full response including the body was received.');
+                }
+            }))
+        }
+
+4> changing the response body type
+    -> We can also set the response type like json , text, blob or buffer in the last config
+       object of any http verb method like get, post, update or delete.
+
+        getPosts(): Observable<Post[]>{
+            return this._http.get<Post[]>('/api/posts/', {
+                headers: new HttpHeaders({
+                    'custom-header': 'I am custom header',
+                }),
+                responseType: 'json'  // default,it may be text, arraybuffer, blob etc
+                });
+        }
+
+    99.99% of the time we use json only.

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Post } from '../model/post.model';
-import { PostService } from '../post.service';
+import { PostService } from '../service/post.service';
 
 @Component({
   selector: 'app-main-container',
@@ -22,10 +22,6 @@ export class MainContainerComponent implements OnInit {
 
   ngOnInit(): void {
     this.getPosts();
-    
-    this._postService.errorSubject.subscribe((error) => {
-      this.error = error;
-    })
   }
 
   onCreatePost(){
@@ -35,7 +31,14 @@ export class MainContainerComponent implements OnInit {
       content: this.postForm.value.content
     }
 
-    this._postService.createPost(body);
+    this._postService.createPost(body)
+    .subscribe({
+      next: (response) => {
+        this.getPosts();
+      },error: (error) => {
+        console.log(error);
+      }
+    })
   }
 
   getPosts(){
